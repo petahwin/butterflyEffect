@@ -1,4 +1,4 @@
 butterflyEffect
 ===============
 
-We're awesome
+By James Batchelder and Peter Nguyen
