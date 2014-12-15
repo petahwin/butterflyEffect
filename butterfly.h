@@ -1,3 +1,6 @@
+#ifndef BUTTERFLY_H
+#define BUTTERFLY_H 1
+
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
@@ -8,72 +11,79 @@
 #include <math.h>
 
 
-#define bint double //butterfly entires can be ints or doubles
- struct matrix {//n by n matrix 
+
+class matrix {//n by n matrix 
+public:
 	int n;
 	double * body;
-};
- void printMatrix(matrix m){
-	 for (int i = 0; i < m.n; i++){
-		 for (int j = 0; j < m.n; i++){
-			 printf("%f    ", m.body[i*m.n + j]);
-		 }
-		 printf("\n");
-	 }
- }
- //assume m is correct 
- void percenterror(matrix m, matrix A){
-	 assert(m.n == A.n);
-	 double total = 0.0;
-	 double totalerr = 0.0;
-	 for (int i = 0; i < m.n; i++){
-		 for (int j = 0; j < m.n; i++){
-			 total += m.body[i*m.n + j];
-			 totalerr += abs(m.body[i*m.n + j] + m.body[i*m.n + j]);
-		 }
+
+	void printMatrix(void){
+		for (int i = 0; i < matrix::n; i++){
+			for (int j = 0; j < matrix::n; j++){
+				printf("%g    ", matrix::body[i*matrix::n + j]);
+			}
+			printf("\n");
+		}
+	}
+	//assume m is correct 
+	void matrix::percenterror(matrix m, matrix A){
+		assert(m.n == A.n);
+		double total = 0.0;
+		double totalerr = 0.0;
+		for (int i = 0; i < m.n; i++){
+			for (int j = 0; j < m.n; j++){
+				total += m.body[i*m.n + j];
+				totalerr += abs(m.body[i*m.n + j] - A.body[i*m.n + j]);
+			}
+
+		}
+		double percenterr = totalerr / total;
+
+		printf("total error was %g  percent error was %g\n", totalerr, percenterr);
+		return;
+	}
+	 matrix::matrix(int inn, bool randfill){
+		matrix::n = inn;
+		if (randfill == true){
+			matrix::body = (double *)malloc(sizeof(double)* n* n);
+			srand(time(NULL));
 		
-	 }
-	 double percenterr = totalerr / total;
-	
-	 printf("total error was %f  percent error was %f\n", totalerr, percenterr);
-	 return;
- }
- void initMatrix(matrix * m, int n){
-	 m->n = n;
-	 m->body = (double *)malloc(sizeof(double)* n* n);
-	 srand(time(NULL));
-	 for (int i = 0; i < n* n; i++){
-		 m->body[i] = rand();
-	 }
- }
-
-
+			for (int i = 0; i < n* n; i++)
+				matrix::body[i] = (double)rand();
+			
+		}
+		else matrix::body = (double *)calloc(n* n, sizeof(double));
+	}
+};
+#define bint double //butterfly entires can be ints or doubles
 class butterfly{
 public :
 	int size; //width of square matrix 
 	int depth;// the number of recursive levels
 	bool transposed;
-	bint ** entries; // diagonal entries 
+	bint * entries; // diagonal entries size * depth
 
 
 	butterfly::butterfly(int insize, int indepth){
-		butterfly::size = size;
-		butterfly::depth = depth;
-		butterfly::entries = (bint **)malloc(depth * sizeof(bint *));
+		butterfly::size = insize;
+		butterfly::depth = indepth;
+		butterfly::entries = (bint *)malloc(depth * size * sizeof(bint ));
 		butterfly::transposed = false;
-		srand(time(NULL));
+		srand(123345);//time(NULL));
 		int r = rand();
-		for (int i = 0; i < depth; i++){
-			entries[i] = (bint *)malloc(size * sizeof(bint));
-			for (int j = 0; j < size; j++){
-				entries[i][j] = (bint)rand();
-			}
+		for (int i = 0; i < indepth * insize; i++){
+			entries[i] = (bint)rand();// / INT_MAX;
 		}
 		return;
 	}
 	//very cheep function for transposing  
 	void butterfly::transpose(void){
 		butterfly::transposed = !butterfly::transposed;
+	}
+	void butterfly::printEntries(void){
+		for (int i = 0; i < size * depth; i++){
+			printf("%g  ", entries[i]);
+		}
 	}
 		//depth numb arrays 
 		//each is width long 
@@ -86,9 +96,13 @@ public :
 
 
 //faster combination of left  and right multi 
-struct matrix middlebmulti( butterfly a, struct matrix m, butterfly b);
+matrix middlebmulti(butterfly a, matrix m, butterfly b);
 // modifies matrix m to be the result of b * m 
-int leftbmulti(butterfly b, struct matrix m);
+int leftbmulti(butterfly b,matrix m);
 // modifies matrix m to be the result of m * b
-int rightbmulti(struct matrix m, butterfly b);
+int rightbmulti( matrix m, butterfly b);
  
+
+
+
+#endif
