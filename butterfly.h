@@ -22,7 +22,7 @@ public:
 			for (int j = 0; j < matrix::n; j++){
 				printf("%g    ", matrix::body[i*matrix::n + j]);
 			}
-			printf("\n");
+			printf("\n\n");
 		}
 	}
 	//assume m is correct 
@@ -72,7 +72,7 @@ public :
 		
 		int r = rand();
 		for (int i = 0; i < indepth * insize; i++){
-			entries[i] = (bint)rand();// / INT_MAX;
+			entries[i] = i + 1; //  (bint)rand();// / INT_MAX;
 		}
 		return;
 	}

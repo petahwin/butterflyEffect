@@ -58,21 +58,21 @@ matrix leftTestmulti(testfly b, matrix m){
 	}
 	return mid;
 }
-matrix matrixmulti(matrix b, matrix m){
-	matrix mid(m.n, true);
+double * matrixmulti(matrix b, matrix m){
+	double * body = (double *) malloc(sizeof(double)* m.n * m.n);
 	assert(m.n == b.n);
 	for (int row = 0; row < m.n; row++){//itterate acrross row 
 		for (int col = 0; col < m.n; col++){//itterate down to next row
-			mid.body[row * m.n + col] = 0.0;
+			body[row * m.n + col] = 0.0;
 			for (int i = 0; i < m.n; i++){
-				mid.body[row *m.n + col] +=
+				body[row *m.n + col] +=
 					b.body[i + row* m.n] *
 					m.body[(i)* m.n + col];
 			}
 		}
 
 	}
-	return mid;
+	return body;
 }
 
 void setSubTestFly(bint * write, int rowsize, int size, bint * read){
@@ -80,20 +80,28 @@ void setSubTestFly(bint * write, int rowsize, int size, bint * read){
 	//rowsize is the lenght of the rows in the original matrix
 	//size is the dimentions of this sub matrix 
 	//read is an location in a butterfly entry 
-
+	int i = 0;
 	//assumes entries were zero ed first 
-	for (int i = 0; i < size / 2; i++){  //upper left
+	for ( i = 0; i < size / 2; i++){  //upper left
 		write[i * rowsize + i] = read[i] * 1 / sqrt(2);
 	}
-	for (int i = 0; i < size / 2; i++){  //uper right
+	for ( i = 0; i < size / 2; i++){  //uper right
 		write[i * rowsize + i + size / 2] = read[i + size / 2] * 1 / sqrt(2);
 	}
-	for (int i = 0; i < size / 2; i++){  //lower left
+	for ( i = 0; i <size / 2; i++){  //lower left
 		write[i * rowsize + i + rowsize *size / 2] = read[i] * 1 / sqrt(2);
 	}
-	for (int i = 0; i < size / 2; i++){  //lower right
+	for ( i = 0; i < size / 2; i++){  //lower right
 		write[i * rowsize + i + rowsize *size / 2 + size / 2] = read[i + size / 2] * -1 / sqrt(2);
 	}
+/*	printf("\n Bkock \n");
+	for ( i = 0; i < size; i++){
+		for (int j = 0; j < size; j++){
+			printf("%g    ", write[i*rowsize + j]);
+		}
+		printf("\n");
+	}*/
+
 	return;
 }
 
