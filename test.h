@@ -6,19 +6,25 @@ public:
 	int depth;// the number of recursive levels
 	bool transposed;
 	bint * entries; // diagonal entries 
-	testfly::testfly(butterfly b){
-		testfly::size = b.size;
+	testfly::testfly(butterfly b){    // r0    R1
+		testfly::size = b.size;		//   R0		-R1
 		testfly::depth = b.depth;
 		testfly::entries = (bint *)malloc(size * size * sizeof(bint));
 		testfly::transposed = false;
 		for (int i = 0; i < size *size; i++) testfly::entries[i] = 0;
-		for (int i = 0; i < size; i++){
-			testfly::entries[i * size] = b.entries[i];
-			for (int j = 1; j < b.depth; j++){
-				testfly::entries[i * size] *= b.entries[j * size + i];
-			}
-
+		for (int i = 0; i < size / 2; i++){  //upper left
+			testfly::entries[i * size + i] = b.entries[i] * 1 / sqrt(2);
 		}
+		for (int i = 0; i < size / 2; i++){  //uper right
+			testfly::entries[i * size + i + size / 2 ] = b.entries[i + size / 2] * 1 / sqrt(2);
+		}
+		for (int i = 0; i < size / 2; i++){  //lower left
+			testfly::entries[i * size + i + size *size / 2] = b.entries[i ] * 1 / sqrt(2);
+		}
+		for (int i = 0; i < size / 2; i++){  //lower right
+			testfly::entries[i * size + i + size *size / 2 + size / 2] = b.entries[i + size / 2] * -1 / sqrt(2);
+		}
+		
 		return;
 	}
 	void testfly::print(void){
@@ -27,6 +33,16 @@ public:
 				printf("%g    ", entries[i*size + j]);
 			}
 			printf("\n");
+		}
+	}
+	void testfly::transpose(void){
+		bint temp = 0.0;
+		for (int i = 0; i < size; i++){
+			for (int j = i + 1; j < size; j++){
+				temp = entries[i * size + j];
+				entries[i * size + j] = entries[j * size + i];
+				entries[j * size + i] = temp;
+			}
 		}
 	}
 	//depth numb arrays 

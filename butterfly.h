@@ -39,14 +39,14 @@ public:
 		}
 		double percenterr = totalerr / total;
 
-		printf("total error was %g  percent error was %g\n", totalerr, percenterr);
+		printf("\ntotal error was %g  percent error was %g\n\n", totalerr, percenterr);
 		return;
 	}
 	 matrix::matrix(int inn, bool randfill){
 		matrix::n = inn;
 		if (randfill == true){
 			matrix::body = (double *)malloc(sizeof(double)* n* n);
-			srand(time(NULL));
+			
 		
 			for (int i = 0; i < n* n; i++)
 				matrix::body[i] = (double)rand();
@@ -69,7 +69,7 @@ public :
 		butterfly::depth = indepth;
 		butterfly::entries = (bint *)malloc(depth * size * sizeof(bint ));
 		butterfly::transposed = false;
-		srand(123345);//time(NULL));
+		
 		int r = rand();
 		for (int i = 0; i < indepth * insize; i++){
 			entries[i] = (bint)rand();// / INT_MAX;

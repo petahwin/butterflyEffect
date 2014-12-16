@@ -29,9 +29,9 @@ matrix middleTestmulti(testfly a, matrix m, testfly b){
 		
 			ret.body[row * m.n + col] = 0.0;
 			for (int i = 0; i < m.n; i++){
-				printf("adding %d %d    %g   %g\n", 
-					i + row* m.n, (i)* m.n + col, ret.body[row * m.n + col],
-					b.entries[(i)* m.n + col]);
+//				printf("adding %d %d    %g   %g\n", 
+	//				i + row* m.n, (i)* m.n + col, ret.body[row * m.n + col],
+		//			b.entries[(i)* m.n + col]);
 				ret.body[row * m.n + col ] +=
 					mid.body[ i + row* m.n] *
 					b.entries[( i) * m.n + col];
