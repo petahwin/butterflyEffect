@@ -136,13 +136,67 @@ matrix middlebmulti(butterfly a, matrix m, butterfly b){
 	return C;
 
 }
-
-matrix leftbmulti(butterfly b, matrix m){
-	matrix C(m.n, false);
+void blockBleft(bint * C, int bsize, int rowsize, bint * A, bint * M ){
+	
 
 	// c is   c0   A0 + a2		c1  a1 + a3
 	//		  c2   a0 - a2      c3  a1 -a3
 
+	//fill pairs in a colomns at a time
+	for (int row = 0; row < bsize / 2; row++){//itterate down to next row
+		for (int col = 0; col < bsize; col++){//itterate accross the row 
+			C[row* rowsize + col] = M[row* rowsize + col];
+			C[(row + bsize / 2)* rowsize + col] = M[row* rowsize + col];
+
+			C[row * rowsize + col] += M[(row + bsize / 2)* rowsize + col];
+			C[(row + bsize / 2)* rowsize + col] -= M[(row + bsize / 2)* rowsize + col];
+
+		}
+	}
+
+	//C.printMatrix();
+	//r0 r1 are diagonals of a 
+	//d1 =  r0  * c1     d2 =  r0 * c2
+	//d3 =  r1	* c3	d4 =  r1  * c4
+	for (int row = 0; row < bsize; row++){
+		for (int col = 0; col < bsize; col++){
+			C[row* rowsize + col] *= A[row] / sqrt(2);
+		}
+	}
+
+}
+matrix leftbmulti(butterfly b, matrix m){
+	matrix C(m.n, false);
+
+
+	if (b.depth == 2){
+		matrix D(m.n, true);
+		//upper left  a1   m11  b1
+		blockBleft(D.body, m.n / 2, m.n, b.entries + m.n, m.body);
+		//upper right   a1  m12   b2
+		blockBleft(D.body + m.n / 2, m.n / 2, m.n, b.entries + m.n, m.body + m.n / 2);
+		//lower left  a2   m21  b1
+		blockBleft(D.body + m.n * (m.n) / 2, m.n / 2, m.n, b.entries + m.n + m.n / 2,
+			m.body + m.n * m.n / 2);
+
+		//lower right  a2   m22  b2
+		blockBleft(D.body + m.n * (m.n + 1) / 2,
+			m.n / 2, m.n, b.entries + m.n + m.n / 2,
+			m.body + m.n * (m.n + 1) / 2);
+		//	printf("\nD is \n");
+		//	D.printMatrix();
+		// now the depth 1 butterfly
+		blockBleft(C.body, m.n, m.n, b.entries, D.body);
+
+		free(D.body);
+
+	}
+	else blockBleft(C.body, m.n, m.n, b.entries, m.body);
+	return C;
+
+	// c is   c0   A0 + a2		c1  a1 + a3
+	//		  c2   a0 - a2      c3  a1 -a3
+	/*
 	//fill pairs in a colomns at a time
 	for (int row = 0; row < m.n / 2; row++){//itterate down to next row
 		for (int col = 0; col < m.n ; col++){//itterate accross the row 
@@ -165,7 +219,7 @@ matrix leftbmulti(butterfly b, matrix m){
 		}
 	}
 
-
+	*/
 	return C;
 }
 
