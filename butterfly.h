@@ -98,7 +98,9 @@ public :
 //faster combination of left  and right multi 
 matrix middlebmulti(butterfly a, matrix m, butterfly b);
 // modifies matrix m to be the result of b * m 
-int leftbmulti(butterfly b,matrix m);
+matrix leftbmulti(butterfly b,matrix m);
+
+//not implimented yet
 // modifies matrix m to be the result of m * b
 int rightbmulti( matrix m, butterfly b);
  

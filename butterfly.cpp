@@ -57,20 +57,13 @@ matrix middlebmulti(butterfly a, matrix m, butterfly b){
 			}
 		}
 	}
-	//printf(" c 111is \n");
-	//C.printMatrix();
-	//r0 r1 are diagonals of a 
-	//d1 =  r0  * c1     d2 =  r0 * c2
-	//d3 =  r1	* c3	d4 =  r1  * c4
+
 	for (int row = 0; row < m.n; row++){
 		for (int col = 0; col < m.n; col++){
 			C.body[row* m.n + col] *= a.entries[row];
 		}
 	}
 
-
-	//printf(" c 222 is \n");
-	//C.printMatrix();
 	//f1 = d1*  r'0 			f2 = d2 * r'1  	
 	//f3 = d3 * r'0 			f4 = d4 * r'1  
 	//devide by 2 
@@ -79,8 +72,38 @@ matrix middlebmulti(butterfly a, matrix m, butterfly b){
 			C.body[row* m.n + col] *= b.entries[col] * .5;
 		}
 	}
-	//printf(" c 333 is \n");
+	return C;
+}
+
+matrix leftbmulti(butterfly b, matrix m){
+	matrix C(m.n, true);
+
+	// c is   c0   A0 + a2		c1  a1 + a3
+	//		  c2   a0 - a2      c3  a1 -a3
+
+	//fill pairs in a colomns at a time
+	for (int row = 0; row < m.n / 2; row++){//itterate down to next row
+		for (int col = 0; col < m.n ; col++){//itterate accross the row 
+			C.body[row* m.n + col] = m.body[row* m.n + col];
+			C.body[(row + m.n / 2)* m.n + col] = m.body[row* m.n + col];
+
+			C.body[row* m.n + col] += m.body[(row + m.n / 2)* m.n + col];
+			C.body[(row + m.n / 2)* m.n + col] -= m.body[(row + m.n / 2)* m.n  + col];
+
+		}
+	}
+	
 	//C.printMatrix();
+	//r0 r1 are diagonals of a 
+	//d1 =  r0  * c1     d2 =  r0 * c2
+	//d3 =  r1	* c3	d4 =  r1  * c4
+	for (int row = 0; row < m.n; row++){
+		for (int col = 0; col < m.n; col++){
+			C.body[row* m.n + col] *= b.entries[row] / sqrt(2);
+		}
+	}
+
+
 	return C;
 }
 

@@ -29,7 +29,7 @@ int main(int argc, const char* argv[])
 	tb.print();
 
 	matrix m(size, true);
-	printf("m is\n");
+	printf("\nm is\n");
 	m.printMatrix();
 	printf("a test transposed is\n\n");
 	ta.transpose();
@@ -43,7 +43,17 @@ int main(int argc, const char* argv[])
 	serial.percenterror(serial, packed);
 	printf("packed is \n");
 //	 packed.printMatrix();
-	 printf("serial is \n");
+	 printf("serial is \n\n");
 //	 serial.printMatrix();
+
+	 matrix leftpack = leftbmulti(a, m);
+	 matrix leftlose = leftTestmulti(ta, m);
+	 serial.percenterror(leftlose, leftpack);
+	 printf("packed is \n");
+	// 	leftpack.printMatrix();
+	 printf("serial is \n");
+	// 	 leftlose.printMatrix();
+
+
 	return 0;
 }
