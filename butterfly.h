@@ -49,11 +49,13 @@ Matrix middlebmulti(Butterfly a, Matrix m, Butterfly b);
 // modifies matrix m to be the result of b * m 
 Matrix leftbmulti(Butterfly a, Matrix m);
 
+
+void leftBVect(Butterfly a, double * vect, int size);
 //not implimented yet
 // modifies matrix m to be the result of m * b
 int rightbmulti(Matrix m, Butterfly b);
  
-
+;
 
 
 #endif

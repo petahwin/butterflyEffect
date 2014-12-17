@@ -8,11 +8,29 @@
 
 /*----------------------------Matrix METHODS---------------------------*/
 
+void leftBVect(Butterfly a, double * vect, int size){
+	//pad 
+	Matrix m(size, false);
+	for (int i = 0; i < size; i++){
+		m.body[i * size] = vect[i];
+	}
+	//multiply
+	Matrix end = leftbmulti( a, m);
+	//return
+	free(m.body);
+	for (int i = 0; i < size; i++){
+		 vect[i] = end.body[i * size];
+	}
+
+}
+
+
+
 Matrix::Matrix(int n_in, bool randfill) {
 	n = n_in;
 	if (randfill == true) {
 		body = (double *)malloc(sizeof(double)* n* n);
-		for (int i = 0; i < n* n; i++) body[i] = (double) rand();
+		for (int i = 0; i < n* n; i++) body[i] = (double)rand();
 	}
 	else {
 		body = (double *)calloc(n* n, sizeof(double));
@@ -43,7 +61,7 @@ void Matrix::percenterror(Matrix m, Matrix A){
 	double percenterr = totalerr / total;
 
 	printf("\ntotal error was %g  percent error \
-		           was %g\n\n", totalerr, percenterr);
+		   		           was %g\n\n", totalerr, percenterr);
 	return;
 }
 
@@ -57,7 +75,7 @@ Butterfly::Butterfly(int insize, int indepth) {
 
 	int r = rand();
 	for (int i = 0; i < indepth * insize; i++){
-		entries[i] =  (bint)rand();// / INT_MAX;
+		entries[i] = (bint)rand();// / INT_MAX;
 	}
 	return;
 }
@@ -74,8 +92,9 @@ void Butterfly::printEntries(void) {
 }
 
 struct Data {
-    int vals[4][3];
+	short vals[4][3];
 	int bigindex[4];
+
 };
 
 Data * writeloc(int rowsize, int bsize){
@@ -105,7 +124,7 @@ Data * writeloc(int rowsize, int bsize){
 	printf("big 1:%d  2:%d   3:%d   4:%d\n", cur.bigindex[0], cur.bigindex[1], cur.bigindex[2], cur.bigindex[3]);
 	Data * gpuloc;
 	cudaMalloc((void**)&gpuloc, sizeof(Data));
-	cudaMemcpy(gpuloc, & cur, sizeof(Data), cudaMemcpyHostToDevice);
+	cudaMemcpy(gpuloc, &cur, sizeof(Data), cudaMemcpyHostToDevice);
 	return gpuloc;
 
 }
@@ -117,8 +136,8 @@ __global__ void gpu_buttermulti(double * C, int bsize, int rowsize, bint * A, do
 	double Clocal[4];
 	for (int block = 0; block < 4; block++){
 		Clocal[block] = M[row * rowsize + col];// row * rowsize + col;
-	//C[ row* rowsize + col] = row * rowsize + col;
-			//M[row * rowsize + col];
+		//C[ row* rowsize + col] = row * rowsize + col;
+		//M[row * rowsize + col];
 		for (int j = 1; j < 4; j++){
 
 			Clocal[block] +=
@@ -127,7 +146,7 @@ __global__ void gpu_buttermulti(double * C, int bsize, int rowsize, bint * A, do
 	}
 	for (int block = 0; block < 4; block++){
 		Clocal[block] *= A[row + bsize / 2 * (block / 2)] *
-							B[col + (block % 2) * bsize / 2] * .5;
+			B[col + (block % 2) * bsize / 2] * .5;
 	}
 	for (int block = 0; block < 4; block++){
 		C[data->bigindex[block] + row* rowsize + col] = Clocal[block];
@@ -141,14 +160,14 @@ __global__ void gpu_LeftButtermulti(double * C, int bsize, int rowsize, bint * A
 	// c is   c0   A0 + a2		c1  a1 + a3
 	//		  c2   a0 - a2      c3  a1 -a3
 	double Clocal[2];
-	Clocal[0]= M[row* rowsize + col];
-	Clocal[1]= M[row* rowsize + col];
+	Clocal[0] = M[row* rowsize + col];
+	Clocal[1] = M[row* rowsize + col];
 
-	Clocal[0]+= M[(row + bsize / 2)* rowsize + col];
+	Clocal[0] += M[(row + bsize / 2)* rowsize + col];
 	Clocal[1] -= M[(row + bsize / 2)* rowsize + col];
 
-	Clocal[0]*= A[row] / sqrt(2.0);
-	Clocal[1]*= A[row + bsize / 2] / sqrt(2.0);
+	Clocal[0] *= A[row] / sqrt(2.0);
+	Clocal[1] *= A[row + bsize / 2] / sqrt(2.0);
 	C[row* rowsize + col] = Clocal[0];
 	C[(row + bsize / 2)* rowsize + col] = Clocal[1];
 
@@ -176,7 +195,7 @@ Matrix middlebmulti(Butterfly a, Matrix m, Butterfly b){
 	}
 
 
-	double * Agpu, * Mgpu, * Bgpu , * Cgpu, *Dgpu;
+	double * Agpu, *Mgpu, *Bgpu, *Cgpu, *Dgpu;
 	int butterSize = a.depth * a.size * sizeof(bint);
 	int matSize = m.n * m.n * sizeof(double);
 	// push a m b onto gpu 
@@ -202,7 +221,7 @@ Matrix middlebmulti(Butterfly a, Matrix m, Butterfly b){
 		Data * data = writeloc(m.n, m.n / 2);
 
 		//upper left  a1   m11  b1
-		gpu_buttermulti<<<miniGrid, Block>>>(Dgpu, m.n / 2, m.n,
+		gpu_buttermulti << <miniGrid, Block >> >(Dgpu, m.n / 2, m.n,
 			Agpu + m.n, Mgpu, Bgpu + m.n, data);
 
 
@@ -211,7 +230,7 @@ Matrix middlebmulti(Butterfly a, Matrix m, Butterfly b){
 			Agpu + m.n, Mgpu + m.n / 2, Bgpu + m.n / 2 + m.n, data);
 
 		//lower left  a2   m21  b1
-		gpu_buttermulti << <miniGrid, Block >> >(Dgpu + m.n * (m.n) / 2, m.n / 2, m.n, 
+		gpu_buttermulti << <miniGrid, Block >> >(Dgpu + m.n * (m.n) / 2, m.n / 2, m.n,
 			Agpu + m.n + m.n / 2, Mgpu + m.n * m.n / 2, Bgpu + m.n, data);
 
 
@@ -221,7 +240,7 @@ Matrix middlebmulti(Butterfly a, Matrix m, Butterfly b){
 			Mgpu + m.n * (m.n + 1) / 2, Bgpu + m.n + m.n / 2, data);
 		cudaFree(data);
 
-		data = writeloc(m.n, m.n );
+		data = writeloc(m.n, m.n);
 		//make space for C on gpu
 		cudaMalloc((void**)&Cgpu, matSize);
 		// now the depth 1 Butterfly
@@ -274,14 +293,14 @@ Matrix leftbmulti(Butterfly a, Matrix m){
 	int matSize = m.n * m.n * sizeof(double);
 	// push a m b onto gpu 
 	cudaMalloc((void**)&Agpu, butterSize);
-	
+
 	cudaMalloc((void**)&Mgpu, matSize);
 
 	cudaMemcpy(Agpu, a.entries, butterSize, cudaMemcpyHostToDevice);
 
 	cudaMemcpy(Mgpu, m.body, matSize, cudaMemcpyHostToDevice);
 
-	dim3 Grid(m.n / (blocksize ), m.n / (blocksize * 2)); //Grid structure
+	dim3 Grid(m.n / (blocksize), m.n / (blocksize * 2)); //Grid structure
 	dim3 Block(blocksize, blocksize); //Block structure
 	printf("\nblock:%d grid:%d m.n:%d \n\n ", blocksize, m.n / (blocksize * 2), m.n);
 	Matrix C(m.n, true);
@@ -291,12 +310,12 @@ Matrix leftbmulti(Butterfly a, Matrix m){
 		//cuda alloc spae for D
 		Matrix D(m.n, true);
 		cudaMalloc((void**)&Dgpu, matSize);
-		
+
 		// reset internal values 
 
 		//upper left  a1   m11  b1
 		gpu_LeftButtermulti << <miniGrid, Block >> >(Dgpu, m.n / 2, m.n,
-			Agpu + m.n, Mgpu );
+			Agpu + m.n, Mgpu);
 
 
 		//upper right   a1  m12   b2
@@ -312,9 +331,9 @@ Matrix leftbmulti(Butterfly a, Matrix m){
 		gpu_LeftButtermulti << <miniGrid, Block >> >(Dgpu + m.n * (m.n + 1) / 2,
 			m.n / 2, m.n, Agpu + m.n + m.n / 2,
 			Mgpu + m.n * (m.n + 1) / 2);
-		
 
-		
+
+
 		//make space for C on gpu
 		cudaMalloc((void**)&Cgpu, matSize);
 		// now the depth 1 Butterfly
@@ -327,19 +346,19 @@ Matrix leftbmulti(Butterfly a, Matrix m){
 
 	}
 	else {
-		
+
 		cudaMalloc((void**)&Cgpu, matSize);
 		//make space for C on gpu
 		gpu_LeftButtermulti << <Grid, Block >> >(Cgpu, m.n, m.n, Agpu, Mgpu);
 		cudaMemcpy(C.body, Cgpu, matSize, cudaMemcpyDeviceToHost);
-		
+
 	}
 
 
 	cudaFree(Cgpu);
 	cudaFree(Mgpu);
 	cudaFree(Agpu);
-	
+
 	return C;
 
 }
