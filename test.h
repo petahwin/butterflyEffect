@@ -47,7 +47,7 @@ public:
 	//		add.printMatrix();
 	//		printf("\nold is  \n");
 	//		old.printMatrix();
-			entries = Matrixmulti(add, old);
+			entries =  Matrixmulti(add, old);
 			
 			//copy out
 			

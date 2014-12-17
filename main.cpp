@@ -35,7 +35,7 @@ int main(int argc, const char* argv[])
 	Matrix m(size, true);
 	printf("\nm is\n");
 	//m.printMatrix();
-	printf("a test transposed is\n\n");
+	//printf("a test transposed is\n\n");
 	ta.transpose();
 	//ta.print();
 
@@ -48,7 +48,7 @@ int main(int argc, const char* argv[])
 	printf("packed is \n");
 //	 packed.printMatrix();
 	 printf("serial is \n\n");
-//	 serial.printMatrix();
+	// serial.printMatrix();
 
 	 Matrix leftpack = leftbmulti(a, m);
 	 Matrix leftlose = leftTestmulti(ta, m);
