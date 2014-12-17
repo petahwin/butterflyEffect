@@ -4,7 +4,6 @@
 #include "test.h"
 
 
-
 //depth 1 square are matricies 
 //must be powers of 2 
 
