@@ -1,7 +1,7 @@
 #include "butterfly.h"
 #include <cuda.h>
 #include<cuda_runtime.h>
-#define blocksize 2
+#define blocksize 4
 #define MaxTW 8
 //matrix must be mutiple of 2 in size 
 
