@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "butterfly.h"
-//#include "serialtest.cpp"
 #include "test.h"
 
 //depth 1 square are matricies 
@@ -9,8 +8,8 @@
 
 int main(int argc, const char* argv[])
 {
-	int size = 32;
-	int depth = 1;
+	int size = 128;
+	int depth = 2;
 	srand(1234);//time(NULL));
 
 	printf("\nHello World \n\n");
@@ -54,9 +53,9 @@ int main(int argc, const char* argv[])
 	 Matrix leftlose = leftTestmulti(ta, m);
 	 serial.percenterror(leftlose, leftpack);
 	 printf("packed is \n");
-//	 	leftpack.printMatrix();
+	// 	leftpack.printMatrix();
 	 printf("serial is \n");
-//	 	 leftlose.printMatrix();
+	// 	 leftlose.printMatrix();
 	
 
 	return 0;

@@ -47,7 +47,7 @@ struct Butterfly {
 //faster combination of left  and right multi 
 Matrix middlebmulti(Butterfly a, Matrix m, Butterfly b);
 // modifies matrix m to be the result of b * m 
-Matrix leftbmulti(Butterfly b, Matrix m);
+Matrix leftbmulti(Butterfly a, Matrix m);
 
 //not implimented yet
 // modifies matrix m to be the result of m * b
