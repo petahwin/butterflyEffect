@@ -1,7 +1,8 @@
 #include "butterfly.h"
 #include <cuda.h>
 #include<cuda_runtime.h>
-#define blocksize 2
+#define blocksize 8
+#define MaxTW 8
 //matrix must be mutiple of 2 in size 
 
 
@@ -113,21 +114,24 @@ __global__ void gpu_buttermulti(double * C, int bsize, int rowsize, bint * A, do
 	//do the row and colith entry in in quadrent 
 	int col = threadIdx.x + blockDim.x * blockIdx.x;
 	int row = threadIdx.y + blockDim.y * blockIdx.y;
+	double Clocal[4];
 	for (int block = 0; block < 4; block++){
-		C[data->bigindex[block] + row* rowsize + col] = M[row * rowsize + col];// row * rowsize + col;
+		Clocal[block] = M[row * rowsize + col];// row * rowsize + col;
 	//C[ row* rowsize + col] = row * rowsize + col;
 			//M[row * rowsize + col];
 		for (int j = 1; j < 4; j++){
 
-			C[data->bigindex[block] + row* rowsize + col] +=
+			Clocal[block] +=
 				M[data->bigindex[j] + row* rowsize + col] * data->vals[block][j - 1];
 		}
 	}
 	for (int block = 0; block < 4; block++){
-		C[data->bigindex[block] + row* rowsize + col] *= A[row + bsize / 2 * (block / 2)] *
+		Clocal[block] *= A[row + bsize / 2 * (block / 2)] *
 							B[col + (block % 2) * bsize / 2] * .5;
 	}
-	
+	for (int block = 0; block < 4; block++){
+		C[data->bigindex[block] + row* rowsize + col] = Clocal[block];
+	}
 
 }
 __global__ void gpu_LeftButtermulti(double * C, int bsize, int rowsize, bint * A, double * M) {
@@ -136,14 +140,17 @@ __global__ void gpu_LeftButtermulti(double * C, int bsize, int rowsize, bint * A
 	int row = threadIdx.y + blockDim.y * blockIdx.y;
 	// c is   c0   A0 + a2		c1  a1 + a3
 	//		  c2   a0 - a2      c3  a1 -a3
-	C[row* rowsize + col] = M[row* rowsize + col];
-	C[(row + bsize / 2)* rowsize + col] = M[row* rowsize + col];
+	double Clocal[2];
+	Clocal[0]= M[row* rowsize + col];
+	Clocal[1]= M[row* rowsize + col];
 
-	C[row * rowsize + col] += M[(row + bsize / 2)* rowsize + col];
-	C[(row + bsize / 2)* rowsize + col] -= M[(row + bsize / 2)* rowsize + col];
+	Clocal[0]+= M[(row + bsize / 2)* rowsize + col];
+	Clocal[1] -= M[(row + bsize / 2)* rowsize + col];
 
-	C[row* rowsize + col] *= A[row] / sqrt(2.0);
-	C[(row + bsize / 2)* rowsize + col] *= A[row + bsize / 2] / sqrt(2.0);
+	Clocal[0]*= A[row] / sqrt(2.0);
+	Clocal[1]*= A[row + bsize / 2] / sqrt(2.0);
+	C[row* rowsize + col] = Clocal[0];
+	C[(row + bsize / 2)* rowsize + col] = Clocal[1];
 
 
 }
