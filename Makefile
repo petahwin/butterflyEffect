@@ -1,7 +1,7 @@
 CCFLAGS = -fPIC -fopenmp -lmagma \
 -fPIC -fopenmp -lopenblas -lcublas -lcudart -lm
 
-CXXFLAGS = -O3  -Wall -fno-strict-aliasing -lmagma \
+CXXFLAGS = -O3  -Wall -fno-strict-aliasing -std=c++11 -lmagma \
 -L/usr/local/openBLAS/lib -L/usr/local/cuda/lib64 \
 -fPIC -fopenmp -lopenblas -lcublas -lcudart -lm
 
@@ -18,10 +18,10 @@ main: main.o butterfly.o
 	#(CXX) -O3  -Wall -fno-strict-aliasing -o $@ $<
 
 main.o: main.cpp
-	$(CXX) -O3  -Wall -fno-strict-aliasing -o $@ -c $<
+	$(CXX) -O3  -Wall -fno-strict-aliasing -std=c++11 -o $@ -c $<
 
 butterfly.o: butterfly.cpp
-	$(CXX) -O3  -Wall -fno-strict-aliasing -o $@ -c $<
+	$(CXX) -O3  -Wall -fno-strict-aliasing -std=c++11 -o $@ -c $<
 
 magtest: magtest.o
 	$(CC) $(CCFLAGS) -o $@ $<

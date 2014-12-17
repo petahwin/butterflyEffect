@@ -80,6 +80,7 @@ int main(int argc, char **argv)
             
             TESTING_MALLOC_CPU( h_A, double, lda*N    );
             TESTING_MALLOC_CPU( h_B, double, ldb*nrhs );
+
             TESTING_MALLOC_CPU( h_X, double, ldb*nrhs );
             TESTING_MALLOC_CPU( work, double,      N );
             TESTING_MALLOC_CPU( ipiv, magma_int_t, N );
@@ -116,6 +117,9 @@ int main(int argc, char **argv)
             
             gpu_time = magma_wtime() - gpu_time;
             printf("piv time: %f\n", gpu_time);
+
+            magma_dsetmatrix( N, N,    h_A, lda, d_A, ldda );
+            magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
 
             gpu_time = magma_wtime();
             magma_dgesv_nopiv_gpu( N, nrhs, d_A, ldda, d_B, lddb, &info );

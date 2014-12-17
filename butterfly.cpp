@@ -1,36 +1,79 @@
-#ifndef BUTTERFLY_CPP
-#define BUTTERFLY_CPP 1
-
 #include "butterfly.h"
-/*
-const static class values{
-public:
-	static int vals[4][3]; //c m
-	values::values(void){
-		vals[0][0] = 1;
-		vals[0][1] = 1; // c1  m 3 
-		vals[0][2] = 1;
 
-		vals[1][0] = -1;
-		vals[1][1] = 1;
-		vals[1][2] = -1;
+/*----------------------------MATRIX METHODS---------------------------*/
 
-		vals[2][0] = 1;
-		vals[2][1] = -1;
-		vals[2][2] = -1;
+Matrix::Matrix(int n_in, bool randfill) {
+    n = n_in;
+    if (randfill == true) {
+        body = (double *)malloc(sizeof(double)* n* n);
+        for (int i = 0; i < n* n; i++) body[i] = (double)rand();
+    }
+    else {
+        body = (double *)calloc(n* n, sizeof(double));
+    }
+}
 
-		vals[3][0] = -1;
-		vals[3][1] = -1;
-		vals[3][2] = 1;
-	}
-};
-*/
+void Matrix::printMatrix(void) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            printf("%g    ", body[i*n + j]);
+        }
+        printf("\n\n");
+    }
+}
+
+//assume m is correct 
+void Matrix::percenterror(Matrix m, Matrix A){
+    assert(m.n == A.n);
+    double total = 0.0;
+    double totalerr = 0.0;
+    for (int i = 0; i < m.n; i++){
+        for (int j = 0; j < m.n; j++){
+            total += m.body[i*m.n + j];
+                totalerr += abs(m.body[i*m.n + j] - A.body[i*m.n + j]);
+        }
+
+    }
+    double percenterr = totalerr / total;
+
+    printf("\ntotal error was %g  percent error \
+        was %g\n\n", totalerr, percenterr);
+    return;
+}
+
+/*--------------------------BUTTERFLY METHODS--------------------------*/
+
+Butterfly::Butterfly(int insize, int indepth) {
+    size = insize;
+    depth = indepth;
+    entries = (bint *)malloc(depth * size * sizeof(bint ));
+    transposed = false;
+    
+    int r = rand();
+    for (int i = 0; i < indepth * insize; i++){
+            entries[i] = i + 1; //  (bint)rand();// / INT_MAX;
+    }
+    return;
+}
+
+//very cheep function for transposing  
+void Butterfly::transpose(void) {
+    transposed = !transposed;
+}
+
+void Butterfly::printEntries(void) {
+    for (int i = 0; i < size * depth; i++) {
+        printf("%g  ", entries[i]);
+    }
+}
+/*----------------------------OPEN FUNCTIONS---------------------------*/
+
 void blockBmidd(bint * C, int bsize, int rowsize, bint * A, bint * M, bint * B){
-	//C is the location in a rowsize * row size matrix where the block of bsize * bsize will start 
-	//A B are the correct entries in 2 butterfly matrices to start this block
+	//C is the location in a rowsize * row size Matrix where the block of bsize * bsize will start 
+	//A B are the correct entries in 2 Butterfly matrices to start this block
 	//M is the start in 
 	//compute chunks of C 
-	// C must be initilized to a row size by row size matrix 
+	// C must be initilized to a row size by row size Matrix 
 	assert(bsize <= rowsize);
 	assert( rowsize % rowsize == 0);
 	//by a i mean m 
@@ -65,7 +108,7 @@ void blockBmidd(bint * C, int bsize, int rowsize, bint * A, bint * M, bint * B){
 	bigindex[2] = rowsize * bsize / 2;
 	bigindex[3] = rowsize * bsize / 2 + bsize / 2;
 
-	for (int block = 0; block < 4; block++){//  split matrix into blocks 
+	for (int block = 0; block < 4; block++){//  split Matrix into blocks 
 
 		//	printf("inddex:%d   block:%d\n", index[block], block);
 		for (int row = 0; row < bsize / 2; row++){//itterate down to next row
@@ -106,14 +149,14 @@ void blockBmidd(bint * C, int bsize, int rowsize, bint * A, bint * M, bint * B){
 
 
 
-matrix middlebmulti(butterfly a, matrix m, butterfly b){
+Matrix middlebmulti(Butterfly a, Matrix m, Butterfly b){
 	//compute chunks of C 
 	assert(a.size = m.n);
 	assert(b.depth = a.depth);
-	matrix C(m.n, true);
+	Matrix C(m.n, true);
 	//start at lowest depth and work outward
 	if (a.depth == 2){
-		matrix D(m.n, true);
+		Matrix D(m.n, true);
 		//upper left  a1   m11  b1
 		blockBmidd(D.body, m.n/2, m.n, a.entries+ m.n, m.body, b.entries + m.n);
 		//upper right   a1  m12   b2
@@ -127,7 +170,7 @@ matrix middlebmulti(butterfly a, matrix m, butterfly b){
 			m.body + m.n * (m.n + 1) / 2,		b.entries + m.n + m.n / 2);
 	//	printf("\nD is \n");
 	//	D.printMatrix();
-		// now the depth 1 butterfly
+		// now the depth 1 Butterfly
 		blockBmidd(C.body, m.n, m.n, a.entries, D.body, b.entries);
 		
 		free(D.body);
@@ -165,12 +208,12 @@ void blockBleft(bint * C, int bsize, int rowsize, bint * A, bint * M ){
 	}
 
 }
-matrix leftbmulti(butterfly b, matrix m){
-	matrix C(m.n, false);
+Matrix leftbmulti(Butterfly b, Matrix m){
+	Matrix C(m.n, false);
 
 
 	if (b.depth == 2){
-		matrix D(m.n, true);
+		Matrix D(m.n, true);
 		//upper left  a1   m11  b1
 		blockBleft(D.body, m.n / 2, m.n, b.entries + m.n, m.body);
 		//upper right   a1  m12   b2
@@ -185,43 +228,16 @@ matrix leftbmulti(butterfly b, matrix m){
 			m.body + m.n * (m.n + 1) / 2);
 		//	printf("\nD is \n");
 		//	D.printMatrix();
-		// now the depth 1 butterfly
+		// now the depth 1 Butterfly
 		blockBleft(C.body, m.n, m.n, b.entries, D.body);
 
 		free(D.body);
 
 	}
-	else blockBleft(C.body, m.n, m.n, b.entries, m.body);
-	return C;
-
-	// c is   c0   A0 + a2		c1  a1 + a3
-	//		  c2   a0 - a2      c3  a1 -a3
-	/*
-	//fill pairs in a colomns at a time
-	for (int row = 0; row < m.n / 2; row++){//itterate down to next row
-		for (int col = 0; col < m.n ; col++){//itterate accross the row 
-			C.body[row* m.n + col] = m.body[row* m.n + col];
-			C.body[(row + m.n / 2)* m.n + col] = m.body[row* m.n + col];
-
-			C.body[row* m.n + col] += m.body[(row + m.n / 2)* m.n + col];
-			C.body[(row + m.n / 2)* m.n + col] -= m.body[(row + m.n / 2)* m.n  + col];
-
-		}
-	}
-	
-	//C.printMatrix();
-	//r0 r1 are diagonals of a 
-	//d1 =  r0  * c1     d2 =  r0 * c2
-	//d3 =  r1	* c3	d4 =  r1  * c4
-	for (int row = 0; row < m.n; row++){
-		for (int col = 0; col < m.n; col++){
-			C.body[row* m.n + col] *= b.entries[row] / sqrt(2);
-		}
-	}
-
-	*/
-	return C;
+	else {
+            blockBleft(C.body, m.n, m.n, b.entries, m.body);
+        }
+        return C;
 }
 
 
-#endif
