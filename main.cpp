@@ -3,12 +3,13 @@
 #include "butterfly.h"
 #include "test.h"
 
+
 //depth 1 square are matricies 
 //must be powers of 2 
 
 int main(int argc, const char* argv[])
 {
-	int size = 128;
+	int size = 64;
 	int depth = 2;
 	srand(1234);//time(NULL));
 
@@ -47,7 +48,7 @@ int main(int argc, const char* argv[])
 	printf("packed is \n");
 //	 packed.printMatrix();
 	 printf("serial is \n\n");
-	// serial.printMatrix();
+// serial.printMatrix();
 
 	 Matrix leftpack = leftbmulti(a, m);
 	 Matrix leftlose = leftTestmulti(ta, m);
@@ -56,7 +57,26 @@ int main(int argc, const char* argv[])
 	// 	leftpack.printMatrix();
 	 printf("serial is \n");
 	// 	 leftlose.printMatrix();
-	
-
+	 double vals[64];
+	 for (int i = 0; i < 64; i++){
+		 vals[i] = i + 1;
+	 }
+	 leftBVect(a, vals ,64 );
+	 for (int i = 0; i < 64; i++){
+		 printf("%d   ", vals[i]  ); 
+	 }
 	return 0;
+}
+void LUsolver(){
+	int size = 64;
+	int depth = 2;
+	Matrix M(size, true);
+
+	//make vector x and B
+	Butterfly A1(size, depth);
+	Butterfly A2(size, depth);
+
+	Matrix condtioned = middlebmulti(A1, M, A2);
+
+
 }
