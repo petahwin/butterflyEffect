@@ -3,11 +3,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
+#include "butterfly.h"
 // includes, project
 #include "magma.h"
 #include "magma_lapack.h"
+// magma_dgetmatrix( N, nrhs, d_B, lddb, h_X, ldb );
 
+// #define magma_getmatrix(           m, n, elemSize, dA_src, ldda, hB_dst, ldb )
+// #define magma_setmatrix(           m, n, elemSize, hA_src, lda, dB_dst, lddb ) 
+//    magma_dsetmatrix( N, N, A.body, lda, d_A, ldda );
+//    magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
 /******************* CPU memory */
 #define TESTING_MALLOC_CPU( ptr, type, size )                              \
     if ( MAGMA_SUCCESS !=                                                  \
@@ -43,113 +48,100 @@
 #define TESTING_FREE_DEV( ptr ) magma_free( ptr )
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- Testing dgesv_gpu
+   -- Testing Butterfly matrices
 */
 int main(int argc, char **argv)
 {
     magma_init();
     magma_print_environment();
 
-    real_Double_t   gflops, cpu_perf, cpu_time, gpu_perf, gpu_time;
-    double          error, Rnorm, Anorm, Xnorm, *work;
-    double c_one     = MAGMA_D_ONE;
-    double c_neg_one = MAGMA_D_NEG_ONE;
-    double *h_A, *h_B, *h_X;
+    real_Double_t   gpu_time;
+    // double error;
+    double *h_B;
     magmaDouble_ptr d_A, d_B;
     magma_int_t *ipiv;
     magma_int_t N, nrhs, lda, ldb, ldda, lddb, info, sizeA, sizeB;
-    magma_int_t ione     = 1;
-    magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t status = 0;
-    
-    // magma_opts opts;
-    // parse_opts( argc, argv, &opts );
      
     nrhs = 1; //opts.nrhs;
     
-    printf("    N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
-    printf("================================================================================\n");
-    //for( int itest = 0; itest < opts.ntest; ++itest ) {
-      //  for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = 5000; // opts.nsize[itest];
-            lda    = N;
-            ldb    = lda;
-            ldda   = ((N+31)/32)*32;
-            lddb   = ldda;
-            // gflops = ( FLOPS_DGETRF( N, N ) + FLOPS_DGETRS( N, nrhs ) ) / 1e9;
-            
-            TESTING_MALLOC_CPU( h_A, double, lda*N    );
-            TESTING_MALLOC_CPU( h_B, double, ldb*nrhs );
+    N = 5000; // opts.nsize[itest];
+    lda    = N;
+    ldb    = lda;
+    ldda   = 5000;
+    lddb   = ldda;
+   
+   
+    // Allocating matrix A and Vector B 
+    TESTING_MALLOC_CPU( h_B, double, ldb*nrhs );
 
-            TESTING_MALLOC_CPU( h_X, double, ldb*nrhs );
-            TESTING_MALLOC_CPU( work, double,      N );
-            TESTING_MALLOC_CPU( ipiv, magma_int_t, N );
-            
-            TESTING_MALLOC_DEV( d_A, double, ldda*N    );
-            TESTING_MALLOC_DEV( d_B, double, lddb*nrhs );
-            
-            /* Initialize the matrices */
-            sizeA = lda*N;
-            sizeB = ldb*nrhs;
 
-            srand(12345);
-            for (int i = 0; i < sizeA; ++i) {
-                h_A[i] = (double) rand() / RAND_MAX;
-            }
+    TESTING_MALLOC_CPU( ipiv, magma_int_t, N );
+    
+    // Allocating device space for host Matrix and vector
+    TESTING_MALLOC_DEV( d_A, double, ldda*N    );
+    TESTING_MALLOC_DEV( d_B, double, lddb*nrhs );
+   
+    Matrix aOut1(5000, false), aOut2(5000, false);
+    /* Initialize the matrices */
+    Matrix A(5000, true);
+    sizeA = lda*N;
+    sizeB = ldb*nrhs;
 
-            for (int i = 0; i < sizeB; ++i) {
-                h_B[i] = (double) rand() / RAND_MAX;
-            }
+    srand(12345);
 
-            // lapackf77_dlarnv( &ione, ISEED, &sizeA, h_A );
-            // lapackf77_dlarnv( &ione, ISEED, &sizeB, h_B );
-            
-            magma_dsetmatrix( N, N,    h_A, lda, d_A, ldda );
-            magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
-            
-            /* ====================================================================
-               Performs operation using MAGMA
-               =================================================================== */
-            printf("Size A=%d, size b=%d\n", sizeA, sizeB);
-            
-            gpu_time = magma_wtime();
-            magma_dgesv_gpu( N, nrhs, d_A, ldda, ipiv, d_B, lddb, &info );
-            
-            gpu_time = magma_wtime() - gpu_time;
-            printf("piv time: %f\n", gpu_time);
+    for (int i = 0; i < sizeB; ++i) {
+        h_B[i] = (double) rand() / RAND_MAX;
+    }
+   
+    // copy to device 
+    magma_dsetmatrix( N, N, A.body, lda, d_A, ldda );
+    magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
+    
+    /* ====================================================================
+       Performs operation using MAGMA
+       =================================================================== */
+    printf("Size A=%d, size b=%d\n", sizeA, sizeB);
+    
+    Butterfly U(5000, 2), V(5000, 2); 
 
-            magma_dsetmatrix( N, N,    h_A, lda, d_A, ldda );
-            magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
+    // Run on piv, no butterfly
+    gpu_time = magma_wtime();
+    magma_dgesv_gpu( N, nrhs, d_A, ldda, ipiv, d_B, lddb, &info );
+    gpu_time = magma_wtime() - gpu_time;
+    printf("piv time: %f\n", gpu_time);
+    
+    // Get output from the device
+    magma_dgetmatrix( N, nrhs, d_B, lddb, aOut1.body, ldb );
 
-            gpu_time = magma_wtime();
-            magma_dgesv_nopiv_gpu( N, nrhs, d_A, ldda, d_B, lddb, &info );
-            
-            gpu_time = magma_wtime() - gpu_time;
-            printf("no piv time: %f\n", gpu_time);
-            
+    // Reset original matrix A and vector B to device
+    magma_dsetmatrix( N, N, A.body, lda, d_A, ldda );
+    magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
 
-            // gpu_perf = gflops / gpu_time;
-            if (info != 0)
-                printf("magma_dgesv_gpu returned error %d: %s.\n",
-                       (int) info, magma_strerror( info ));
-            
-            /* ============================================================= */
-             
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_CPU( h_B );
-            TESTING_FREE_CPU( h_X );
-            TESTING_FREE_CPU( work );
-            TESTING_FREE_CPU( ipiv );
-            
-            TESTING_FREE_DEV( d_A );
-            TESTING_FREE_DEV( d_B );
-            fflush( stdout );
-   //     }
-   //     if ( opts.niter > 1 ) {
-            printf( "\n" );
-   //     }
-   // }
+    
+    // Run on no pivoting, no butterfly
+    gpu_time = magma_wtime();
+    magma_dgesv_nopiv_gpu( N, nrhs, d_A, ldda, d_B, lddb, &info ); 
+    gpu_time = magma_wtime() - gpu_time;
+    printf("no piv time: %f\n", gpu_time);
+    
+    // Get output from the device
+    magma_dgetmatrix( N, nrhs, d_B, lddb, aOut2.body, ldb );
+    if (info != 0)
+        printf("magma_dgesv_gpu returned error %d: %s.\n",
+               (int) info, magma_strerror( info ));
+    
+    /* ============================================================= */
+    Matrix::percenterror(aOut1, aOut2);
+     
+    TESTING_FREE_CPU( h_B );
+    TESTING_FREE_CPU( ipiv );
+    
+    TESTING_FREE_DEV( d_A );
+    TESTING_FREE_DEV( d_B );
+    fflush( stdout );
 
     magma_finalize();
     return status;
 }
+

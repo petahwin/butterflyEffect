@@ -20,14 +20,17 @@ main: main.o butterfly.o test.o
 main.o: main.cpp
 	$(CXX) -O3  -Wall -fno-strict-aliasing -std=c++11 -o $@ -c $<
 
-butterfly.o: butterfly.cpp
-	$(CXX) -O3  -Wall -fno-strict-aliasing -std=c++11 -o $@ -c $<
+butterfly.o: butterfly.cu
+	nvcc -arch=sm_20 -std=c++11 -o $@ -c $<
+
+#butterfly.o: butterfly.cpp
+#	$(CXX) -O3  -Wall -fno-strict-aliasing -std=c++11 -o $@ -c $<
 
 test.o: test.cpp
 	$(CXX) -O3  -Wall -fno-strict-aliasing -std=c++11 -o $@ -c $<
 
-magtest: magtest.o
-	$(CC) $(CCFLAGS) -o $@ $<
+magtest: magtest.o butterfly.o
+	$(CC)  -o $@ $^ $(CCFLAGS)
 
 magtest.o: magtest.cpp
 	$(CXX) $(CXXFLAGS) $(MACROS) $(INCLUDEDIRS) -o $@ -c $<
