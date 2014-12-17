@@ -1,3 +1,4 @@
+#define MATSIZE 512
 // includes, system
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +8,7 @@
 // includes, project
 #include "magma.h"
 #include "magma_lapack.h"
+#include "cuda.h"
 // magma_dgetmatrix( N, nrhs, d_B, lddb, h_X, ldb );
 
 // #define magma_getmatrix(           m, n, elemSize, dA_src, ldda, hB_dst, ldb )
@@ -65,10 +67,10 @@ int main(int argc, char **argv)
      
     nrhs = 1; //opts.nrhs;
     
-    N = 5000; // opts.nsize[itest];
+    N = MATSIZE; // opts.nsize[itest];
     lda    = N;
     ldb    = lda;
-    ldda   = 5000;
+    ldda   = MATSIZE;
     lddb   = ldda;
    
    
@@ -82,16 +84,16 @@ int main(int argc, char **argv)
     TESTING_MALLOC_DEV( d_A, double, ldda*N    );
     TESTING_MALLOC_DEV( d_B, double, lddb*nrhs );
    
-    Matrix aOut1(5000, false), aOut2(5000, false);
+    Matrix aOut1(MATSIZE, false), aOut2(MATSIZE, false);
     /* Initialize the matrices */
-    Matrix A(5000, true);
+    Matrix A(MATSIZE, true);
     sizeA = lda*N;
     sizeB = ldb*nrhs;
 
     srand(12345);
 
     for (int i = 0; i < sizeB; ++i) {
-        h_B[i] = (double) rand() / RAND_MAX;
+        h_B[i] = (double) rand() ;
     }
    
     // copy to device 
@@ -103,7 +105,7 @@ int main(int argc, char **argv)
        =================================================================== */
     printf("Size A=%d, size b=%d\n", sizeA, sizeB);
     
-    Butterfly U(5000, 2), V(5000, 2); 
+
 
     // Run on piv, no butterfly
     gpu_time = magma_wtime();
@@ -127,13 +129,81 @@ int main(int argc, char **argv)
     
     // Get output from the device
     magma_dgetmatrix( N, nrhs, d_B, lddb, aOut2.body, ldb );
+    
+    // Run on no piv, BUTTERFLY
+    gpu_time = magma_wtime();
+    Butterfly U(MATSIZE, 1), V(MATSIZE, 1); 
+
+// printf("===========================================================\n");
+// printf("A pre op\n");
+// A.printMatrix();
+// printf("===========================================================\n");
+//     
+// printf("===========================================================\n");
+// printf("B pre op\n");
+//     for (int i = 0; i < MATSIZE; ++i) printf("%f\n", h_B[i]);
+// printf("===========================================================\n");
+    
+    A = middlebmulti(U, A, V);    // transforms A => U * A * V
+   
+// printf("===========================================================\n");
+// printf("A post op\n");
+// A.printMatrix();
+// printf("===========================================================\n");
+    leftBVect(U, h_B, MATSIZE); // transforms B => U * B
+    
+// printf("===========================================================\n");
+// printf("B post op\n");
+//     for (int i = 0; i < MATSIZE; ++i) printf("%f\n", h_B[i]);
+// printf("===========================================================\n");
+    // Set new matrix A and vector B to device
+    magma_dsetmatrix( N, N, A.body, lda, d_A, ldda );
+    magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
+
+    magma_dgesv_nopiv_gpu( N, nrhs, d_A, ldda, d_B, lddb, &info ); // Solve for y
+
+    magma_dgetmatrix( N, nrhs, d_B, lddb, h_B, ldb ); // get y
+/*    
+printf("===========================================================\n");
+    printf("This is y");
+    for (int i = 0; i < MATSIZE; ++i) printf("%f\n", h_B[i]);
+printf("===========================================================\n");
+*/
+    // get x = Vy
+    leftBVect(V, h_B, MATSIZE);
+
+    gpu_time = magma_wtime() - gpu_time;
+    printf("no piv butterfly time: %f\n", gpu_time);
+    
+    Matrix aOut3(MATSIZE, false);
+
+    magma_dsetmatrix( N, nrhs, h_B, ldb, d_B, lddb );
+    magma_dgetmatrix( N, nrhs, d_B, lddb, aOut3.body, ldb );
+
     if (info != 0)
         printf("magma_dgesv_gpu returned error %d: %s.\n",
                (int) info, magma_strerror( info ));
     
-    /* ============================================================= */
+    /* ============================================================= 
+    */
+  
+    printf("WITHOUT butt error\n");
     Matrix::percenterror(aOut1, aOut2);
-     
+    printf("WITH butt error\n");
+    Matrix::percenterror(aOut1, aOut3);
+/*
+printf("===========================================================\n");
+printf("===========================================================\n");
+printf("===========================================================\n");
+    aOut1.printMatrix(); 
+    
+    
+printf("===========================================================\n");
+printf("===========================================================\n");
+printf("===========================================================\n");
+*/
+//    aOut3.printMatrix();
+
     TESTING_FREE_CPU( h_B );
     TESTING_FREE_CPU( ipiv );
     

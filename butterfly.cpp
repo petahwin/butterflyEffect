@@ -6,7 +6,7 @@ Matrix::Matrix(int n_in, bool randfill) {
     n = n_in;
     if (randfill == true) {
         body = (double *)malloc(sizeof(double)* n* n);
-        for (int i = 0; i < n* n; i++) body[i] = (double)rand();
+        for (int i = 0; i < n* n; i++) body[i] = (double)rand() / RAND_MAX;
     }
     else {
         body = (double *)calloc(n* n, sizeof(double));
@@ -49,7 +49,7 @@ Butterfly::Butterfly(int insize, int indepth) {
     entries = (bint *)malloc(depth * size * sizeof(bint ));
     transposed = false;
     
-    int r = rand();
+    int r = rand() / RAND_MAX;
     for (int i = 0; i < indepth * insize; i++){
             entries[i] = i + 1; //  (bint)rand();// / INT_MAX;
     }

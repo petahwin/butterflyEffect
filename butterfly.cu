@@ -1,7 +1,7 @@
 #include "butterfly.h"
 #include <cuda.h>
 #include<cuda_runtime.h>
-#define blocksize 8
+#define blocksize 2
 #define MaxTW 8
 //matrix must be mutiple of 2 in size 
 
@@ -75,7 +75,7 @@ Butterfly::Butterfly(int insize, int indepth) {
 
 	int r = rand();
 	for (int i = 0; i < indepth * insize; i++){
-		entries[i] = (bint)rand();// / INT_MAX;
+		entries[i] = (bint)rand() / INT_MAX;
 	}
 	return;
 }
