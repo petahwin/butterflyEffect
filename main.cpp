@@ -9,7 +9,7 @@
 
 int main(int argc, const char* argv[])
 {
-	int size = 64;
+	int size = 512;
 	int depth = 2;
 	srand(1234);//time(NULL));
 
@@ -46,7 +46,7 @@ int main(int argc, const char* argv[])
 	 Matrix packed = middlebmulti(a, m, b);
 	serial.percenterror(serial, packed);
 	printf("packed is \n");
-//	 packed.printMatrix();
+	 packed.printMatrix();
 	 printf("serial is \n\n");
 // serial.printMatrix();
 
@@ -62,9 +62,9 @@ int main(int argc, const char* argv[])
 		 vals[i] = i + 1;
 	 }
 	 leftBVect(a, vals ,64 );
-	 for (int i = 0; i < 64; i++){
-		 printf("%d   ", vals[i]  ); 
-	 }
+//	 for (int i = 0; i < 64; i++){
+//		 printf("%d   ", vals[i]  ); 
+//	 }
 	return 0;
 }
 void LUsolver(){

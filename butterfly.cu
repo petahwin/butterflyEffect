@@ -48,6 +48,7 @@ void Matrix::printMatrix(void) {
 
 //assume m is correct 
 void Matrix::percenterror(Matrix m, Matrix A){
+	//prints the error / sum of all entries in m
 	assert(m.n == A.n);
 	double total = 0.0;
 	double totalerr = 0.0;
@@ -66,7 +67,7 @@ void Matrix::percenterror(Matrix m, Matrix A){
 }
 
 /*--------------------------Butterfly METHODS--------------------------*/
-
+//creates a butterfly matrix of insize size ad indepth depth
 Butterfly::Butterfly(int insize, int indepth) {
 	size = insize;
 	depth = indepth;
@@ -85,21 +86,24 @@ void Butterfly::transpose(void) {
 	transposed = !transposed;
 }
 
+//mostly used for debugging
 void Butterfly::printEntries(void) {
 	for (int i = 0; i < size * depth; i++) {
 		printf("%g  ", entries[i]);
 	}
 }
 
+//passed to cuda programs to reduce redundant calculation 
 struct Data {
-	short vals[4][3];
-	int bigindex[4];
+	short vals[4][3];  //indicators for C as a chuks of c 
+	int bigindex[4];	// indexes of the uperleft most entry in each quadrant
 
 };
 
 Data * writeloc(int rowsize, int bsize){
 	// initilize the vals and big index 
-	//write them to GPU mem
+	//write them to GPU mem 
+	//return pointer points to GPU memory 
 	Data cur;
 	cur.vals[0][0] = 1;
 	cur.vals[0][1] = 1; // c1  m 3 
@@ -130,8 +134,15 @@ Data * writeloc(int rowsize, int bsize){
 }
 
 __global__ void gpu_buttermulti(double * C, int bsize, int rowsize, bint * A, double * M, bint * B, Data * data) {
-	//do the row and colith entry in in quadrent 
+	//do the row and colith entry in each quadrent 
+	// c1  - c4 are in the same posstion within each quadrent 
+
+	//0 c1 = a11 + a12 +a21 +a22    1 c2 = a11 - a12 +a21 - a22
+	//2 c3 = a11 + a12 -a21 - a22	3 c4 = a11 - a12 - a21 +a22
+	
+	//will compute the 4 elements col steps from left side of quadrent
 	int col = threadIdx.x + blockDim.x * blockIdx.x;
+	//and row steps from the top 
 	int row = threadIdx.y + blockDim.y * blockIdx.y;
 	double Clocal[4];
 	for (int block = 0; block < 4; block++){

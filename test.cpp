@@ -16,17 +16,14 @@ Matrix middleTestmulti(testfly a, Matrix m, testfly b){
 		}
 
 	}
-	printf("mid is \n");
-	mid.printMatrix();
+	//printf("mid is \n");
+	//mid.printMatrix();
 	Matrix ret(m.n, true);
 	for (int row = 0; row < m.n; row++ ){//itterate down to next row 
 		for (int col = 0; col < m.n; col++){//itterate acrross row
 		
 			ret.body[row * m.n + col] = 0.0;
 			for (int i = 0; i < m.n; i++){
-//				printf("adding %d %d    %g   %g\n", 
-	//				i + row* m.n, (i)* m.n + col, ret.body[row * m.n + col],
-		//			b.entries[(i)* m.n + col]);
 				ret.body[row * m.n + col ] +=
 					mid.body[ i + row* m.n] *
 					b.entries[( i) * m.n + col];
@@ -71,6 +68,7 @@ double * Matrixmulti(Matrix b, Matrix m){
 }
 
 void setSubTestFly(bint * write, int rowsize, int size, bint * read){
+	//coppy over the unpacked butterfly matix in this sub matrix
 	//write in a Matrix first entry to write to 
 	//rowsize is the lenght of the rows in the original Matrix
 	//size is the dimentions of this sub Matrix 
@@ -89,13 +87,6 @@ void setSubTestFly(bint * write, int rowsize, int size, bint * read){
 	for ( i = 0; i < size / 2; i++){  //lower right
 		write[i * rowsize + i + rowsize *size / 2 + size / 2] = read[i + size / 2] * -1 / sqrt(2);
 	}
-/*	printf("\n Bkock \n");
-	for ( i = 0; i < size; i++){
-		for (int j = 0; j < size; j++){
-			printf("%g    ", write[i*rowsize + j]);
-		}
-		printf("\n");
-	}*/
 
 	return;
 }

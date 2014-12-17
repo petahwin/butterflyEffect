@@ -15,17 +15,11 @@ public:
 	bool transposed;
 	bint * entries; // diagonal entries 
 	testfly(Butterfly b){    // r0    R1
-		
+		//wil coppy over the unpacked form corresponding the to butterfly b
 		testfly::size = b.size;		//   R0		-R1
-		testfly::depth = b.depth;
-		//make Matrix propigate with Butterfly 
-		//make second fill with Butterfly 
-		//multily together 
-		//refuill old  multiply until done 
-
-		
+		testfly::depth = b.depth;		
 		testfly::transposed = false;
-
+		assert(depth <= 2); //only set up for depth 2 multiplications 
 		
 		if (b.depth == 1){
 			testfly::entries = (bint *)malloc(size * size * sizeof(bint));
@@ -37,22 +31,19 @@ public:
 			Matrix old(size, false);
 			double * oldbody = old.body;
 			Matrix add(size, false);
+			// set the depth 1 componant matrix 
 			setSubTestFly(old.body, size, size, b.entries);
-			//wrtite a Butterfly in the upper left
+
+			//wrtite a Butterfly in the upper left of componat 2
 			setSubTestFly(add.body, size, size / 2, b.entries + size);
 			//now lower right
 			setSubTestFly(add.body + (size + 1 )* size /2 , size, size / 2, b.entries + size + size /2 );
-			//multiply together stick in old
-		//	printf("\nadd is  \n");
-	//		add.printMatrix();
-	//		printf("\nold is  \n");
-	//		old.printMatrix();
 			entries =  Matrixmulti(add, old);
 			
 			//copy out
 			
-	//		free(add.body);
-	//	free(old.body);
+			free(add.body);
+	free(old.body);
 
 		}
 		
