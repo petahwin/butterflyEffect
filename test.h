@@ -1,22 +1,25 @@
 #ifndef TEST_H
 #define TEST 1
 
+#ifndef Butterfly_H
 #include "butterfly.h"
-void setSubTestFly(bint * write, int rowsize, int size, bint * read);
-double * matrixmulti(matrix b, matrix m);
+#endif
 
-class testfly{//holds unpacked butterfly matrices 
+void setSubTestFly(bint * write, int rowsize, int size, bint * read);
+double * Matrixmulti(Matrix b, Matrix m);
+
+class testfly{//holds unpacked Butterfly matrices 
 public:
-	int size; //width of square matrix 
+	int size; //width of square Matrix 
 	int depth;// the number of recursive levels
 	bool transposed;
 	bint * entries; // diagonal entries 
-	testfly::testfly(butterfly b){    // r0    R1
+	testfly(Butterfly b){    // r0    R1
 		
 		testfly::size = b.size;		//   R0		-R1
 		testfly::depth = b.depth;
-		//make matrix propigate with butterfly 
-		//make second fill with butterfly 
+		//make Matrix propigate with Butterfly 
+		//make second fill with Butterfly 
 		//multily together 
 		//refuill old  multiply until done 
 
@@ -31,11 +34,11 @@ public:
 			
 		}
 		else{ // do 2 case
-			matrix old(size, false);
+			Matrix old(size, false);
 			double * oldbody = old.body;
-			matrix add(size, false);
+			Matrix add(size, false);
 			setSubTestFly(old.body, size, size, b.entries);
-			//wrtite a butterfly in the upper left
+			//wrtite a Butterfly in the upper left
 			setSubTestFly(add.body, size, size / 2, b.entries + size);
 			//now lower right
 			setSubTestFly(add.body + (size + 1 )* size /2 , size, size / 2, b.entries + size + size /2 );
@@ -44,7 +47,7 @@ public:
 	//		add.printMatrix();
 	//		printf("\nold is  \n");
 	//		old.printMatrix();
-			entries = matrixmulti(add, old);
+			entries = Matrixmulti(add, old);
 			
 			//copy out
 			
@@ -56,7 +59,7 @@ public:
 		
 		return;
 	}
-	void testfly::print(void){
+	void print(void){
 		for (int i = 0; i < size; i++){
 			for (int j = 0; j < size; j++){
 				printf("%g    ", entries[i*size + j]);
@@ -64,7 +67,7 @@ public:
 			printf("\n");
 		}
 	}
-	void testfly::transpose(void){
+	void transpose(void){
 		bint temp = 0.0;
 		for (int i = 0; i < size; i++){
 			for (int j = i + 1; j < size; j++){
@@ -78,9 +81,9 @@ public:
 	//each is width long 
 
 };
-matrix middleTestmulti(testfly a, matrix m, testfly b);
+Matrix middleTestmulti(testfly a, Matrix m, testfly b);
 
-matrix leftTestmulti(testfly b, matrix m);
+Matrix leftTestmulti(testfly b, Matrix m);
 
 
 

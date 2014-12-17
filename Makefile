@@ -14,13 +14,16 @@ MACROS = -DMAGMA_SETAFFINITY -DHAVE_CUBLAS -DMIN_CUDA_ARCH=200 -DADD_
 
 INCLUDEDIRS = -I/usr/local/cuda/include -Imagmainclude/
 
-main: main.o butterfly.o 
-	#(CXX) -O3  -Wall -fno-strict-aliasing -o $@ $<
+main: main.o butterfly.o test.o
+	$(CXX) -O3  -Wall -fno-strict-aliasing -o $@ $?
 
 main.o: main.cpp
 	$(CXX) -O3  -Wall -fno-strict-aliasing -std=c++11 -o $@ -c $<
 
 butterfly.o: butterfly.cpp
+	$(CXX) -O3  -Wall -fno-strict-aliasing -std=c++11 -o $@ -c $<
+
+test.o: test.cpp
 	$(CXX) -O3  -Wall -fno-strict-aliasing -std=c++11 -o $@ -c $<
 
 magtest: magtest.o

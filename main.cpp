@@ -14,8 +14,8 @@ int main(int argc, const char* argv[])
 	srand(1234);//time(NULL));
 
 	printf("\nHello World \n\n");
-	butterfly a(size, depth);
-	butterfly b(size, depth);
+	Butterfly a(size, depth);
+	Butterfly b(size, depth);
 
 	printf("a is\n");
 //	a.printEntries();
@@ -32,26 +32,26 @@ int main(int argc, const char* argv[])
 	printf("b test is\n");
 //	tb.print();
 
-	matrix m(size, true);
+	Matrix m(size, true);
 	printf("\nm is\n");
 	//m.printMatrix();
 	printf("a test transposed is\n\n");
 	ta.transpose();
 	//ta.print();
 
-	matrix serial = middleTestmulti(ta, m, tb);
+	Matrix serial = middleTestmulti(ta, m, tb);
 	
 	a.transpose();
 	
-	 matrix packed = middlebmulti(a, m, b);
+	 Matrix packed = middlebmulti(a, m, b);
 	serial.percenterror(serial, packed);
 	printf("packed is \n");
 //	 packed.printMatrix();
 	 printf("serial is \n\n");
 //	 serial.printMatrix();
 
-	 matrix leftpack = leftbmulti(a, m);
-	 matrix leftlose = leftTestmulti(ta, m);
+	 Matrix leftpack = leftbmulti(a, m);
+	 Matrix leftlose = leftTestmulti(ta, m);
 	 serial.percenterror(leftlose, leftpack);
 	 printf("packed is \n");
 //	 	leftpack.printMatrix();

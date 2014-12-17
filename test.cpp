@@ -1,13 +1,8 @@
-#ifndef TESTFLY_H
-#define TESTFLY_H 1
 #include "butterfly.h"
 #include "test.h"
 
-
-
-
-matrix middleTestmulti(testfly a, matrix m, testfly b){
-	matrix mid(m.n, true);
+Matrix middleTestmulti(testfly a, Matrix m, testfly b){
+	Matrix mid(m.n, true);
 	assert(a.size == m.n);
 	assert(m.n == b.size);
 	for (int row = 0; row < m.n; row++){//itterate acrross row 
@@ -23,7 +18,7 @@ matrix middleTestmulti(testfly a, matrix m, testfly b){
 	}
 	printf("mid is \n");
 	mid.printMatrix();
-	matrix ret(m.n, true);
+	Matrix ret(m.n, true);
 	for (int row = 0; row < m.n; row++ ){//itterate down to next row 
 		for (int col = 0; col < m.n; col++){//itterate acrross row
 		
@@ -42,8 +37,8 @@ matrix middleTestmulti(testfly a, matrix m, testfly b){
 	free(mid.body);
 	return ret;
 }
-matrix leftTestmulti(testfly b, matrix m){
-	matrix mid(m.n, true);
+Matrix leftTestmulti(testfly b, Matrix m){
+	Matrix mid(m.n, true);
 	assert(m.n == b.size);
 	for (int row = 0; row < m.n; row++){//itterate acrross row 
 		for (int col = 0; col < m.n; col++){//itterate down to next row
@@ -58,7 +53,7 @@ matrix leftTestmulti(testfly b, matrix m){
 	}
 	return mid;
 }
-double * matrixmulti(matrix b, matrix m){
+double * Matrixmulti(Matrix b, Matrix m){
 	double * body = (double *) malloc(sizeof(double)* m.n * m.n);
 	assert(m.n == b.n);
 	for (int row = 0; row < m.n; row++){//itterate acrross row 
@@ -76,10 +71,10 @@ double * matrixmulti(matrix b, matrix m){
 }
 
 void setSubTestFly(bint * write, int rowsize, int size, bint * read){
-	//write in a matrix first entry to write to 
-	//rowsize is the lenght of the rows in the original matrix
-	//size is the dimentions of this sub matrix 
-	//read is an location in a butterfly entry 
+	//write in a Matrix first entry to write to 
+	//rowsize is the lenght of the rows in the original Matrix
+	//size is the dimentions of this sub Matrix 
+	//read is an location in a Butterfly entry 
 	int i = 0;
 	//assumes entries were zero ed first 
 	for ( i = 0; i < size / 2; i++){  //upper left
@@ -106,5 +101,3 @@ void setSubTestFly(bint * write, int rowsize, int size, bint * read){
 }
 
 
-
-#endif
